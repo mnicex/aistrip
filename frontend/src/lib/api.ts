@@ -30,6 +30,16 @@ export interface StripCreateResponse {
   script: ComicScript;
 }
 
+// --- Project save/load ---
+
+export interface StripProject {
+  version: 1;
+  idea: string;
+  characters: CharacterDef[];
+  script: ComicScript;
+  panel_order?: number[];
+}
+
 export async function generateScript(
   idea: string,
   characters: CharacterDef[],

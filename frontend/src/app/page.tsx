@@ -8,6 +8,7 @@ import {
   type CharacterDef,
   type ComicScript,
   type PanelScript,
+  type StripProject,
   generateScript,
   generateImages,
 } from "@/lib/api";
@@ -78,6 +79,17 @@ export default function Home() {
     setStripId("");
     setPanelPaths({});
     setError(null);
+    setCurrentIdea("");
+  };
+
+  const handleLoadProject = (project: StripProject) => {
+    setCurrentIdea(project.idea);
+    setCharacters(project.characters);
+    setScript(project.script);
+    setStripId(`loaded_${Date.now().toString(36)}`);
+    setPanelPaths({});
+    setError(null);
+    setStep("script");
   };
 
   return (
@@ -137,7 +149,7 @@ export default function Home() {
                 Describe your idea and characters — AI does the rest.
               </p>
             </div>
-            <IdeaForm onSubmit={handleIdeaSubmit} loading={loading} />
+            <IdeaForm onSubmit={handleIdeaSubmit} onLoadProject={handleLoadProject} loading={loading} />
           </div>
         )}
 
@@ -157,6 +169,7 @@ export default function Home() {
             script={script}
             characters={characters}
             panelPaths={panelPaths}
+            idea={currentIdea}
           />
         )}
       </main>

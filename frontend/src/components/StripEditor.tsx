@@ -24,6 +24,7 @@ import {
   type ComicScript,
   type CharacterDef,
   type DialogueLine,
+  type StripProject,
   panelImageUrl,
   regeneratePanel,
   exportStrip,
@@ -40,6 +41,7 @@ interface Props {
   script: ComicScript;
   characters: CharacterDef[];
   panelPaths: Record<number, string>;
+  idea: string;
 }
 
 function SortablePanel({
@@ -174,7 +176,7 @@ function SortablePanel({
   );
 }
 
-export default function StripEditor({ stripId, script, characters, panelPaths }: Props) {
+export default function StripEditor({ stripId, script, characters, panelPaths, idea }: Props) {
   const [panels, setPanels] = useState<PanelData[]>(() =>
     script.panels.map((p) => ({
       panelNumber: p.panel_number,
@@ -245,6 +247,23 @@ export default function StripEditor({ stripId, script, characters, panelPaths }:
     }
   };
 
+  const handleSaveProject = () => {
+    const project: StripProject = {
+      version: 1,
+      idea,
+      characters,
+      script,
+      panel_order: panels.map((p) => p.panelNumber),
+    };
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${script.title.replace(/[^a-zA-Z0-9]/g, "_")}.aistrip.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -275,13 +294,19 @@ export default function StripEditor({ stripId, script, characters, panelPaths }:
         </DndContext>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-3">
+        <button
+          onClick={handleSaveProject}
+          className="rounded-lg border border-stone-300 bg-white px-6 py-3 text-stone-700 font-medium hover:border-violet-400 hover:text-violet-700 shadow-sm transition"
+        >
+          💾 Save Project
+        </button>
         <button
           onClick={handleExport}
           disabled={exporting}
           className="rounded-lg bg-violet-600 px-8 py-3 text-white font-semibold hover:bg-violet-700 disabled:bg-violet-400 shadow-sm transition"
         >
-          {exporting ? "Exporting..." : "📥 Export Strip as PNG"}
+          {exporting ? "Exporting..." : "📥 Export as PNG"}
         </button>
       </div>
     </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { type CharacterDef, describeCharacterFromImage, suggestCharacters } from "@/lib/api";
+import { useState, useRef, useCallback } from "react";
+import { type CharacterDef, type StripProject, describeCharacterFromImage, suggestCharacters } from "@/lib/api";
 import IdeaRefiner from "./IdeaRefiner";
 
 interface Props {
   onSubmit: (idea: string, characters: CharacterDef[], numPanels: number) => void;
+  onLoadProject: (project: StripProject) => void;
   loading: boolean;
 }
 
@@ -14,15 +15,41 @@ interface CharacterUI extends CharacterDef {
   describing?: boolean;
 }
 
-export default function IdeaForm({ onSubmit, loading }: Props) {
+export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
   const [idea, setIdea] = useState("");
   const [numPanels, setNumPanels] = useState(4);
   const [characters, setCharacters] = useState<CharacterUI[]>([
     { name: "", appearance: "", personality: "" },
   ]);
   const [suggesting, setSuggesting] = useState(false);
+  const [dragging, setDragging] = useState(false);
 
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const projectInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleProjectFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const project = JSON.parse(reader.result as string) as StripProject;
+        if (project.script && project.characters) {
+          onLoadProject(project);
+        }
+      } catch {
+        console.error("Invalid project file");
+      }
+    };
+    reader.readAsText(file);
+  }, [onLoadProject]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith(".json")) {
+      handleProjectFile(file);
+    }
+  }, [handleProjectFile]);
 
   const handleSuggestCharacters = async () => {
     if (!idea.trim()) return;
@@ -104,6 +131,43 @@ export default function IdeaForm({ onSubmit, loading }: Props) {
   };
 
   return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+      className="relative"
+    >
+      {/* Drop overlay */}
+      {dragging && (
+        <div className="absolute inset-0 z-50 rounded-xl border-2 border-dashed border-violet-400 bg-violet-50/90 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-lg font-semibold text-violet-700">Drop .aistrip.json here</p>
+            <p className="text-sm text-violet-500">Load a saved project</p>
+          </div>
+        </div>
+      )}
+
+      {/* Load project button */}
+      <div className="mb-4 flex justify-end">
+        <input
+          ref={projectInputRef}
+          type="file"
+          accept=".json"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) handleProjectFile(file);
+          }}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => projectInputRef.current?.click()}
+          className="text-sm text-stone-500 hover:text-violet-700 transition flex items-center gap-1"
+        >
+          📂 Load saved project
+        </button>
+      </div>
+
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Idea */}
       <div className="space-y-2">
@@ -267,5 +331,6 @@ export default function IdeaForm({ onSubmit, loading }: Props) {
         {loading ? "✨ Generating script..." : "Generate Comic Script"}
       </button>
     </form>
+    </div>
   );
 }
