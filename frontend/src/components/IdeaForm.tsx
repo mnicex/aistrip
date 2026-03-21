@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { type CharacterDef, describeCharacterFromImage } from "@/lib/api";
+import { type CharacterDef, describeCharacterFromImage, suggestCharacters } from "@/lib/api";
 import IdeaRefiner from "./IdeaRefiner";
 
 interface Props {
@@ -20,8 +20,22 @@ export default function IdeaForm({ onSubmit, loading }: Props) {
   const [characters, setCharacters] = useState<CharacterUI[]>([
     { name: "", appearance: "", personality: "" },
   ]);
+  const [suggesting, setSuggesting] = useState(false);
 
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleSuggestCharacters = async () => {
+    if (!idea.trim()) return;
+    setSuggesting(true);
+    try {
+      const result = await suggestCharacters(idea, numPanels <= 3 ? 2 : 3);
+      setCharacters(result.characters.map((c) => ({ ...c })));
+    } catch (err) {
+      console.error("Failed to suggest characters:", err);
+    } finally {
+      setSuggesting(false);
+    }
+  };
 
   const addCharacter = () => {
     if (characters.length < 5) {
@@ -137,14 +151,24 @@ export default function IdeaForm({ onSubmit, loading }: Props) {
       <div>
         <div className="flex items-center justify-between mb-2">
           <label className="text-sm font-medium text-stone-700">Characters</label>
-          <button
-            type="button"
-            onClick={addCharacter}
-            disabled={characters.length >= 5}
-            className="text-sm text-violet-600 hover:text-violet-800 disabled:text-stone-400 transition"
-          >
-            + Add character
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSuggestCharacters}
+              disabled={suggesting || !idea.trim()}
+              className="text-sm text-amber-600 hover:text-amber-800 disabled:text-stone-400 transition flex items-center gap-1"
+            >
+              {suggesting ? "✨ Suggesting..." : "✨ Suggest with AI"}
+            </button>
+            <button
+              type="button"
+              onClick={addCharacter}
+              disabled={characters.length >= 5}
+              className="text-sm text-violet-600 hover:text-violet-800 disabled:text-stone-400 transition"
+            >
+              + Add character
+            </button>
+          </div>
         </div>
 
         <div className="space-y-4">

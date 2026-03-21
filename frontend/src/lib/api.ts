@@ -152,3 +152,18 @@ export async function describeCharacterFromImage(
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// --- Character Suggestion ---
+
+export async function suggestCharacters(
+  idea: string,
+  numCharacters: number = 2
+): Promise<{ characters: CharacterDef[] }> {
+  const res = await fetch(`${API_BASE}/api/scripts/suggest-characters`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ idea, num_characters: numCharacters }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

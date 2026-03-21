@@ -95,3 +95,12 @@ class DescribeCharacterRequest(BaseModel):
 class DescribeCharacterResponse(BaseModel):
     appearance: str
     personality: str
+
+
+class SuggestCharactersRequest(BaseModel):
+    idea: str = Field(..., description="The comic strip idea")
+    num_characters: int = Field(default=2, ge=1, le=5)
+
+
+class SuggestCharactersResponse(BaseModel):
+    characters: list[CharacterDef]

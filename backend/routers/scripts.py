@@ -15,7 +15,10 @@ from models.schemas import (
     IdeaRefineResponse,
     StripCreateRequest,
     StripCreateResponse,
+    SuggestCharactersRequest,
+    SuggestCharactersResponse,
 )
+from services.character_suggester import suggest_characters
 from services.idea_refiner import refine_idea
 from services.script_engine import generate_script
 from services.vision_describer import describe_character_from_image
@@ -69,3 +72,16 @@ async def describe_character_endpoint(
         appearance=result.get("appearance", ""),
         personality=result.get("personality", ""),
     )
+
+
+@router.post("/suggest-characters", response_model=SuggestCharactersResponse)
+async def suggest_characters_endpoint(
+    req: SuggestCharactersRequest,
+    settings: Settings = Depends(get_settings),
+) -> SuggestCharactersResponse:
+    chars = await suggest_characters(
+        idea=req.idea,
+        num_characters=req.num_characters,
+        settings=settings,
+    )
+    return SuggestCharactersResponse(characters=chars)
