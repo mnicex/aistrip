@@ -95,23 +95,33 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-orange-200/60 bg-white/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">💥</span>
-            <h1 className="text-xl font-bold text-stone-900">AI Strip</h1>
+      <header className="comic-header comic-dots relative">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between relative z-10">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5">
+            <div className="action-burst">
+              <span className="relative text-2xl z-10">⚡</span>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="comic-logo text-2xl tracking-tight">AI Strip</span>
+              <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-0.5">Comic Generator</span>
+            </div>
           </div>
 
           {/* Step indicator */}
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-1.5 text-sm">
             {(["input", "script", "editor"] as Step[]).map((s, i) => (
-              <div key={s} className="flex items-center gap-2">
-                {i > 0 && <span className="text-stone-300">→</span>}
+              <div key={s} className="flex items-center gap-1.5">
+                {i > 0 && (
+                  <svg className="w-4 h-4 text-stone-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                )}
                 <span
-                  className={`px-3 py-1 rounded-full transition ${
+                  className={`px-3 py-1 rounded-full font-medium transition-all ${
                     step === s
-                      ? "bg-violet-100 text-violet-700 font-medium"
-                      : "text-stone-400"
+                      ? "bg-stone-900 text-white shadow-sm step-active"
+                      : "text-stone-400 hover:text-stone-600"
                   }`}
                 >
                   {s === "input" ? "💡 Idea" : s === "script" ? "📝 Script" : "✂️ Editor"}
@@ -123,9 +133,9 @@ export default function Home() {
           {step !== "input" && (
             <button
               onClick={handleStartOver}
-              className="text-sm text-stone-500 hover:text-stone-800 transition"
+              className="text-sm font-medium text-stone-500 hover:text-stone-900 border border-stone-300 rounded-full px-3 py-1 hover:border-stone-500 transition"
             >
-              ← Start over
+              ↺ New strip
             </button>
           )}
         </div>
@@ -142,8 +152,8 @@ export default function Home() {
         {step === "input" && (
           <div className="max-w-2xl mx-auto">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-stone-900 mb-2">
-                Turn any idea into a cartoon strip
+              <h2 className="comic-logo text-4xl mb-3">
+                Turn any idea into a comic strip
               </h2>
               <p className="text-stone-500">
                 Describe your idea and characters — AI does the rest.
