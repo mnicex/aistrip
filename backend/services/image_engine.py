@@ -83,20 +83,19 @@ async def generate_all_panels(
     settings: Settings,
 ) -> dict[int, str]:
     """Generate images for all panels in parallel. Returns {panel_number: path}."""
-    tasks = {
-        panel.panel_number: generate_panel_image(
-            panel, script, characters, strip_id, settings
-        )
+    panel_numbers = [p.panel_number for p in script.panels]
+    coros = [
+        generate_panel_image(panel, script, characters, strip_id, settings)
         for panel in script.panels
-    }
+    ]
+
+    outcomes = await asyncio.gather(*coros, return_exceptions=True)
 
     results: dict[int, str] = {}
-    for panel_num, coro in tasks.items():
-        try:
-            path = await coro
-            results[panel_num] = path
-        except Exception as exc:
-            # Store error placeholder so the editor can show a retry button
-            results[panel_num] = f"ERROR: {exc}"
+    for panel_num, outcome in zip(panel_numbers, outcomes):
+        if isinstance(outcome, Exception):
+            results[panel_num] = f"ERROR: {outcome}"
+        else:
+            results[panel_num] = outcome
 
     return results
