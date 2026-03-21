@@ -104,3 +104,14 @@ class SuggestCharactersRequest(BaseModel):
 
 class SuggestCharactersResponse(BaseModel):
     characters: list[CharacterDef]
+
+
+class RewritePanelRequest(BaseModel):
+    panel: PanelScript
+    instruction: str = Field(..., description="What to change (e.g. 'make the dialogue funnier')")
+    art_style: str = Field("", description="Current art style for context")
+    idea: str = Field("", description="Original comic idea for context")
+
+
+class RewritePanelResponse(BaseModel):
+    panel: PanelScript

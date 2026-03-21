@@ -24,6 +24,7 @@ export default function Home() {
   const [script, setScript] = useState<ComicScript | null>(null);
   const [characters, setCharacters] = useState<CharacterDef[]>([]);
   const [panelPaths, setPanelPaths] = useState<Record<number, string>>({});
+  const [currentIdea, setCurrentIdea] = useState("");
 
   const handleIdeaSubmit = async (
     idea: string,
@@ -33,6 +34,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setCharacters(chars);
+    setCurrentIdea(idea);
     try {
       const result = await generateScript(idea, chars, numPanels);
       setStripId(result.strip_id);
@@ -142,6 +144,7 @@ export default function Home() {
         {step === "script" && script && (
           <ScriptPreview
             script={script}
+            idea={currentIdea}
             onEditPanel={handleEditPanel}
             onConfirm={handleGenerateImages}
             loading={loading}

@@ -13,6 +13,8 @@ from models.schemas import (
     DescribeCharacterResponse,
     IdeaRefineRequest,
     IdeaRefineResponse,
+    RewritePanelRequest,
+    RewritePanelResponse,
     StripCreateRequest,
     StripCreateResponse,
     SuggestCharactersRequest,
@@ -20,6 +22,7 @@ from models.schemas import (
 )
 from services.character_suggester import suggest_characters
 from services.idea_refiner import refine_idea
+from services.panel_rewriter import rewrite_panel
 from services.script_engine import generate_script
 from services.vision_describer import describe_character_from_image
 
@@ -85,3 +88,18 @@ async def suggest_characters_endpoint(
         settings=settings,
     )
     return SuggestCharactersResponse(characters=chars)
+
+
+@router.post("/rewrite-panel", response_model=RewritePanelResponse)
+async def rewrite_panel_endpoint(
+    req: RewritePanelRequest,
+    settings: Settings = Depends(get_settings),
+) -> RewritePanelResponse:
+    result = await rewrite_panel(
+        panel=req.panel,
+        instruction=req.instruction,
+        art_style=req.art_style,
+        idea=req.idea,
+        settings=settings,
+    )
+    return RewritePanelResponse(panel=result)

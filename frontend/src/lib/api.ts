@@ -167,3 +167,25 @@ export async function suggestCharacters(
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// --- Panel Rewrite ---
+
+export async function rewritePanel(
+  panel: PanelScript,
+  instruction: string,
+  artStyle: string = "",
+  idea: string = ""
+): Promise<{ panel: PanelScript }> {
+  const res = await fetch(`${API_BASE}/api/scripts/rewrite-panel`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      panel,
+      instruction,
+      art_style: artStyle,
+      idea,
+    }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
