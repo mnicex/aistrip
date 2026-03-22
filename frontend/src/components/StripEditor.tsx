@@ -180,6 +180,7 @@ function BubbleOverlay({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onClick={(e) => e.stopPropagation()}
     >
       <div
         className={`${shapeClass} px-2.5 py-1.5 relative shadow-sm`}
