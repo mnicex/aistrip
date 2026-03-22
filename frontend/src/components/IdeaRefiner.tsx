@@ -132,7 +132,7 @@ export default function IdeaRefiner({ currentIdea, onAccept }: Props) {
             </button>
           </div>
 
-          {/* Accept button */}
+          {/* Accept / Discard */}
           <div className="flex gap-2">
             <button
               type="button"
@@ -143,6 +143,19 @@ export default function IdeaRefiner({ currentIdea, onAccept }: Props) {
               className="rounded bg-amber-500 px-4 py-1.5 text-sm font-medium text-white hover:bg-amber-600 transition"
             >
               ✓ Use this idea
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setRefined("");
+                setSuggestions([]);
+                setHistory([]);
+                setFeedback("");
+                setError(null);
+              }}
+              className="rounded border border-stone-300 px-4 py-1.5 text-sm text-stone-500 hover:text-stone-700 hover:border-stone-400 transition"
+            >
+              ✕ Discard &amp; retry
             </button>
           </div>
         </div>
