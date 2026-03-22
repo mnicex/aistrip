@@ -625,7 +625,7 @@ export default function StripEditor({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${stripId}_strip.png`;
+      a.download = `${title.trim().replace(/[^a-zA-Z0-9]+/g, "_")}_strip.png`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
@@ -659,8 +659,10 @@ export default function StripEditor({
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Strip title..."
-          className="text-2xl font-bold text-stone-900 text-center bg-transparent border-b-2 border-transparent hover:border-stone-300 focus:border-violet-500 focus:outline-none w-full max-w-lg mx-auto block transition"
+          placeholder="Strip title (required)"
+          className={`text-2xl font-bold text-stone-900 text-center bg-transparent border-b-2 focus:outline-none w-full max-w-lg mx-auto block transition ${
+            title.trim() ? "border-transparent hover:border-stone-300 focus:border-violet-500" : "border-rose-300 focus:border-rose-500"
+          }`}
         />
         <input
           value={author}
@@ -709,7 +711,7 @@ export default function StripEditor({
         </button>
         <button
           onClick={handleExport}
-          disabled={exporting}
+          disabled={exporting || !title.trim()}
           className="rounded-lg bg-violet-600 px-8 py-3 text-white font-semibold hover:bg-violet-700 disabled:bg-violet-400 shadow-sm transition"
         >
           {exporting ? "Exporting..." : "📥 Export as PNG"}
