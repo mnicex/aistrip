@@ -13,6 +13,7 @@ export interface DialogueLine {
 }
 
 export type BubbleStyle = "speech" | "thought" | "shout" | "whisper" | "narrator";
+export type TailPosition = "left" | "center" | "right";
 
 export interface BubbleConfig {
   x: number;
@@ -21,6 +22,7 @@ export interface BubbleConfig {
   color: string;
   opacity: number;
   showCharacter: boolean;
+  tailPosition: TailPosition;
 }
 
 export interface DialogueBubble {
@@ -132,6 +134,7 @@ export async function exportStrip(
         color: b.bubble.color,
         opacity: b.bubble.opacity,
         show_character: b.bubble.showCharacter,
+        tail_position: b.bubble.tailPosition,
       }));
     }
   }

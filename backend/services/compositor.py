@@ -83,6 +83,7 @@ def _draw_styled_bubble(
     color: str = "#FFFFFF",
     opacity: float = 0.9,
     max_width: int = BUBBLE_MAX_WIDTH,
+    tail_position: str = "center",
 ) -> None:
     """Draw a styled bubble with text onto an RGBA overlay."""
     draw = ImageDraw.Draw(overlay)
@@ -105,32 +106,41 @@ def _draw_styled_bubble(
     rx = (rect[2] - rect[0]) / 2
     ry = (rect[3] - rect[1]) / 2
 
+    # Compute tail X based on position
+    bw = rect[2] - rect[0]
+    if tail_position == "left":
+        tail_x = int(rect[0] + bw * 0.15)
+    elif tail_position == "right":
+        tail_x = int(rect[0] + bw * 0.80)
+    else:
+        tail_x = int(cx)
+
     if style == "narrator":
         draw.rectangle(rect, fill=fill, outline=outline, width=2)
     elif style == "shout":
         pts = _starburst_polygon(cx, cy, rx + 8, ry + 8, spikes=12, depth=0.22)
         draw.polygon(pts, fill=fill, outline=outline, width=3)
+        # Tail
+        tail_y = int(rect[3]) + 6
+        draw.polygon(
+            [(tail_x - 8, tail_y - 6), (tail_x + 8, tail_y - 6), (tail_x, tail_y + 10)],
+            fill=fill, outline=outline,
+        )
     elif style == "thought":
         draw.rounded_rectangle(rect, radius=max(rx, ry) * 0.6, fill=fill, outline=outline, width=2)
-        # Thought trail dots
-        dot_x = int(cx) - 8
         dot_y = int(rect[3])
-        draw.ellipse((dot_x, dot_y + 3, dot_x + 12, dot_y + 13), fill=fill, outline=outline, width=1)
-        draw.ellipse((dot_x - 4, dot_y + 15, dot_x + 5, dot_y + 22), fill=fill, outline=outline, width=1)
+        draw.ellipse((tail_x - 6, dot_y + 3, tail_x + 6, dot_y + 13), fill=fill, outline=outline, width=1)
+        draw.ellipse((tail_x - 8, dot_y + 15, tail_x - 1, dot_y + 22), fill=fill, outline=outline, width=1)
     elif style == "whisper":
         draw.rounded_rectangle(rect, radius=BUBBLE_RADIUS, fill=fill, outline=None)
-        # Lighter dashed-look outline (thin + grey)
         grey_outline = (140, 140, 140, alpha)
         draw.rounded_rectangle(rect, radius=BUBBLE_RADIUS, fill=None, outline=grey_outline, width=1)
     else:  # speech
         draw.rounded_rectangle(rect, radius=BUBBLE_RADIUS, fill=fill, outline=outline, width=2)
-        # Tail triangle
-        tail_x = int(cx)
         tail_y = int(rect[3])
         draw.polygon(
             [(tail_x - 8, tail_y), (tail_x + 8, tail_y), (tail_x, tail_y + 16)],
-            fill=fill,
-            outline=outline,
+            fill=fill, outline=outline,
         )
 
     draw.text((x, y), wrapped, fill=text_fill, font=font)
@@ -189,6 +199,7 @@ def add_styled_bubbles_to_panel(
             style=b.style,
             color=b.color,
             opacity=b.opacity,
+            tail_position=getattr(b, "tail_position", "center"),
         )
 
     return Image.alpha_composite(img, overlay).convert("RGB")

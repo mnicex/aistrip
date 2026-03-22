@@ -32,6 +32,7 @@ class DialogueBubble(BaseModel):
     color: str = Field(default="#FFFFFF", description="Bubble fill colour (hex)")
     opacity: float = Field(default=0.9, ge=0, le=1)
     show_character: bool = Field(default=True, description="Show character name in text")
+    tail_position: str = Field(default="center", description="Tail direction: left, center, right")
 
 
 # Rebuild PanelScript so the forward reference to DialogueLine resolves

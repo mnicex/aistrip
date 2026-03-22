@@ -10,6 +10,7 @@ import {
   type DialogueBubble,
   type BubbleStyle,
   type BubbleConfig,
+  type TailPosition,
   type StripProject,
   panelImageUrl,
   regeneratePanel,
@@ -42,6 +43,7 @@ function makeBubbleConfig(index: number, total: number): BubbleConfig {
     color: "#FFFFFF",
     opacity: 0.92,
     showCharacter: true,
+    tailPosition: "center",
   };
 }
 
@@ -101,9 +103,13 @@ function BubbleOverlay({
   };
 
   const { style, color, opacity, showCharacter } = bubble.bubble;
+  const tp = bubble.bubble.tailPosition || "center";
   const displayText = showCharacter && bubble.character
     ? `${bubble.character}: ${bubble.text}`
     : bubble.text;
+
+  // Tail horizontal position
+  const tailLeft = tp === "left" ? "12%" : tp === "right" ? "78%" : "45%";
 
   // Style-specific CSS
   let shapeClass = "rounded-xl border-2 border-stone-800";
@@ -116,12 +122,12 @@ function BubbleOverlay({
       tailEl = (
         <>
           <div
-            className="absolute -bottom-2 left-5 w-3 h-3 rounded-full border-2 border-stone-600"
-            style={{ backgroundColor: color }}
+            className="absolute -bottom-2 w-3 h-3 rounded-full border-2 border-stone-600"
+            style={{ backgroundColor: color, left: tailLeft }}
           />
           <div
-            className="absolute -bottom-4 left-3 w-2 h-2 rounded-full border border-stone-600"
-            style={{ backgroundColor: color }}
+            className="absolute -bottom-4 w-2 h-2 rounded-full border border-stone-600"
+            style={{ backgroundColor: color, left: `calc(${tailLeft} - 4px)` }}
           />
         </>
       );
@@ -131,8 +137,9 @@ function BubbleOverlay({
       textClass = "text-[12px] leading-tight text-stone-900 font-extrabold uppercase";
       tailEl = (
         <div
-          className="absolute -bottom-2.5 left-5"
+          className="absolute -bottom-2.5"
           style={{
+            left: tailLeft,
             width: 0,
             height: 0,
             borderLeft: "9px solid transparent",
@@ -153,8 +160,9 @@ function BubbleOverlay({
     default: // speech
       tailEl = (
         <div
-          className="absolute -bottom-2 left-5"
+          className="absolute -bottom-2"
           style={{
+            left: tailLeft,
             width: 0,
             height: 0,
             borderLeft: "7px solid transparent",
@@ -259,6 +267,28 @@ function BubbleToolbar({
           ))}
         </div>
       </div>
+
+      {/* Tail position — only for styles that have a tail */}
+      {bubble.bubble.style !== "whisper" && bubble.bubble.style !== "narrator" && (
+        <div className="flex items-center gap-1">
+          <span className="text-stone-500 w-14 shrink-0">Tail</span>
+          <div className="flex gap-0.5">
+            {(["left", "center", "right"] as TailPosition[]).map((pos) => (
+              <button
+                key={pos}
+                onClick={() => updCfg({ tailPosition: pos })}
+                className={`px-2.5 py-1 rounded text-xs capitalize transition ${
+                  (bubble.bubble.tailPosition || "center") === pos
+                    ? "bg-violet-100 border border-violet-400 font-medium"
+                    : "border border-stone-200 hover:bg-stone-50"
+                }`}
+              >
+                {pos === "left" ? "◁ Left" : pos === "right" ? "Right ▷" : "▽ Center"}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Color */}
       <div className="flex items-center gap-1">
