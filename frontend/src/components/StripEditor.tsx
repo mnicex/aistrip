@@ -373,17 +373,21 @@ interface PanelData {
 function PanelEditor({
   panel,
   characterNames,
+  sceneDescription,
   onUpdate,
   onRegenerate,
   regenerating,
 }: {
   panel: PanelData;
   characterNames: string[];
+  sceneDescription: string;
   onUpdate: (p: PanelData) => void;
-  onRegenerate: (panelNumber: number) => void;
+  onRegenerate: (panelNumber: number, customPrompt?: string) => void;
   regenerating: boolean;
 }) {
   const [selectedBubble, setSelectedBubble] = useState<number | null>(null);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [promptText, setPromptText] = useState(sceneDescription);
 
   const updateBubble = (index: number, b: DialogueBubble) => {
     const updated = [...panel.bubbles];
@@ -425,11 +429,10 @@ function PanelEditor({
               💬 Add bubble
             </button>
             <button
-              onClick={() => onRegenerate(panel.panelNumber)}
-              disabled={regenerating}
-              className="text-xs text-amber-600 hover:text-amber-800 disabled:text-stone-400 transition"
+              onClick={() => { setShowPrompt(!showPrompt); setSelectedBubble(null); }}
+              className={`text-xs font-medium transition ${showPrompt ? "text-amber-700" : "text-amber-600 hover:text-amber-800"}`}
             >
-              {regenerating ? "⏳ Regen..." : "🔄 Regen"}
+              {showPrompt ? "✕ Close prompt" : "🖼️ Edit prompt"}
             </button>
           </div>
         </div>
@@ -437,7 +440,7 @@ function PanelEditor({
         {/* Image + bubble overlays */}
         <div
           className="relative w-full aspect-square bg-stone-100 overflow-hidden"
-          onClick={() => setSelectedBubble(null)}
+          onClick={() => { setSelectedBubble(null); }}
         >
           {isError ? (
             <div className="flex items-center justify-center h-full text-rose-500 text-sm p-4 text-center">
@@ -474,6 +477,46 @@ function PanelEditor({
           )}
         </div>
       </div>
+
+      {/* Prompt editor */}
+      {showPrompt && (
+        <div className="bg-white border border-stone-200 rounded-lg shadow-lg p-3 space-y-2">
+          <label className="text-xs font-medium text-stone-600 block">
+            🖼️ Image prompt
+          </label>
+          <textarea
+            value={promptText}
+            onChange={(e) => setPromptText(e.target.value)}
+            rows={4}
+            className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-xs text-stone-900 placeholder-stone-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-200 resize-y"
+            placeholder="Describe the scene you want to generate..."
+          />
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => { setPromptText(sceneDescription); }}
+              className="text-xs text-stone-400 hover:text-stone-600 transition"
+            >
+              ↺ Reset to original
+            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => onRegenerate(panel.panelNumber)}
+                disabled={regenerating}
+                className="text-xs border border-stone-300 rounded px-3 py-1 text-stone-600 hover:border-stone-400 transition disabled:text-stone-300"
+              >
+                {regenerating ? "⏳..." : "🔄 Default regen"}
+              </button>
+              <button
+                onClick={() => onRegenerate(panel.panelNumber, promptText)}
+                disabled={regenerating || !promptText.trim()}
+                className="text-xs bg-amber-500 text-white rounded px-3 py-1 hover:bg-amber-600 disabled:bg-amber-300 transition font-medium"
+              >
+                {regenerating ? "⏳ Generating..." : "▶ Generate with this prompt"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toolbar for selected bubble */}
       {sel && selectedBubble !== null && (
@@ -532,11 +575,11 @@ export default function StripEditor({
     );
   };
 
-  const handleRegenerate = async (panelNumber: number) => {
+  const handleRegenerate = async (panelNumber: number, customPrompt?: string) => {
     setRegeneratingPanel(panelNumber);
     setEditorError(null);
     try {
-      await regeneratePanel(stripId, panelNumber, script, characters);
+      await regeneratePanel(stripId, panelNumber, script, characters, customPrompt);
       setPanels((prev) =>
         prev.map((p) =>
           p.panelNumber === panelNumber
@@ -624,6 +667,9 @@ export default function StripEditor({
               key={panel.panelNumber}
               panel={panel}
               characterNames={characterNames}
+              sceneDescription={
+                script.panels.find((p) => p.panel_number === panel.panelNumber)?.scene_description || ""
+              }
               onUpdate={(p) => updatePanel(panel.panelNumber, p)}
               onRegenerate={handleRegenerate}
               regenerating={regeneratingPanel === panel.panelNumber}
