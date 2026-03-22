@@ -22,6 +22,18 @@ class DialogueLine(BaseModel):
     text: str
 
 
+class DialogueBubble(BaseModel):
+    """Extended dialogue with bubble position and style for the editor/export."""
+    character: str
+    text: str
+    x: float = Field(default=50, ge=0, le=100, description="X position as percentage")
+    y: float = Field(default=10, ge=0, le=100, description="Y position as percentage")
+    style: str = Field(default="speech", description="speech, thought, shout, whisper, narrator")
+    color: str = Field(default="#FFFFFF", description="Bubble fill colour (hex)")
+    opacity: float = Field(default=0.9, ge=0, le=1)
+    show_character: bool = Field(default=True, description="Show character name in text")
+
+
 # Rebuild PanelScript so the forward reference to DialogueLine resolves
 PanelScript.model_rebuild()
 
@@ -74,6 +86,10 @@ class StripExportRequest(BaseModel):
     panel_order: list[int] = Field(..., description="Ordered panel numbers to include")
     format: str = Field(default="png", pattern="^(png|jpg)$")
     script: ComicScript
+    panel_bubbles: dict[str, list[DialogueBubble]] = Field(
+        default_factory=dict,
+        description="Optional per-panel bubble configs keyed by panel number",
+    )
 
 
 class IdeaRefineRequest(BaseModel):

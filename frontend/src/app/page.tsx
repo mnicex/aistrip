@@ -26,6 +26,7 @@ export default function Home() {
   const [characters, setCharacters] = useState<CharacterDef[]>([]);
   const [panelPaths, setPanelPaths] = useState<Record<number, string>>({});
   const [currentIdea, setCurrentIdea] = useState("");
+  const [savedBubbles, setSavedBubbles] = useState<Record<number, any[]> | undefined>(undefined);
 
   const handleIdeaSubmit = async (
     idea: string,
@@ -88,6 +89,7 @@ export default function Home() {
     setScript(project.script);
     setStripId(`loaded_${Date.now().toString(36)}`);
     setPanelPaths({});
+    setSavedBubbles((project as any).panel_bubbles ?? undefined);
     setError(null);
     setStep("script");
   };
@@ -180,6 +182,7 @@ export default function Home() {
             characters={characters}
             panelPaths={panelPaths}
             idea={currentIdea}
+            savedBubbles={savedBubbles}
           />
         )}
       </main>

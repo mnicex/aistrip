@@ -12,6 +12,23 @@ export interface DialogueLine {
   text: string;
 }
 
+export type BubbleStyle = "speech" | "thought" | "shout" | "whisper" | "narrator";
+
+export interface BubbleConfig {
+  x: number;
+  y: number;
+  style: BubbleStyle;
+  color: string;
+  opacity: number;
+  showCharacter: boolean;
+}
+
+export interface DialogueBubble {
+  character: string;
+  text: string;
+  bubble: BubbleConfig;
+}
+
 export interface PanelScript {
   panel_number: number;
   scene_description: string;
@@ -38,6 +55,7 @@ export interface StripProject {
   characters: CharacterDef[];
   script: ComicScript;
   panel_order?: number[];
+  panel_bubbles?: Record<number, DialogueBubble[]>;
 }
 
 export async function generateScript(
@@ -98,6 +116,7 @@ export async function exportStrip(
   stripId: string,
   panelOrder: number[],
   script: ComicScript,
+  panelBubbles?: Record<number, DialogueBubble[]>,
   format: "png" | "jpg" = "png"
 ): Promise<Blob> {
   const res = await fetch(`${API_BASE}/api/strips/export`, {
@@ -108,6 +127,7 @@ export async function exportStrip(
       panel_order: panelOrder,
       format,
       script,
+      panel_bubbles: panelBubbles || {},
     }),
   });
   if (!res.ok) throw new Error(await res.text());

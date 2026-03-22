@@ -40,6 +40,7 @@ async def export_strip(
         panel_order=req.panel_order,
         output_path=out_path,
         fmt=req.format,
+        panel_bubbles=req.panel_bubbles if req.panel_bubbles else None,
     )
 
     return FileResponse(
