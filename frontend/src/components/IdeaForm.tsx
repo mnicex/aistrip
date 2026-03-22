@@ -185,12 +185,12 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
         <label className="block text-sm font-medium text-stone-700">
           Your comic idea
         </label>
-        <input
-          type="text"
+        <textarea
           value={idea}
           onChange={(e) => setIdea(e.target.value)}
           placeholder="A cat tries to order pizza but keeps getting distracted..."
-          className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition"
+          rows={5}
+          className="w-full rounded-lg border border-stone-300 bg-white px-4 py-3 text-stone-900 placeholder-stone-400 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 transition resize-y"
           required
         />
         <IdeaRefiner
@@ -314,12 +314,12 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
                 )}
               </div>
 
-              <input
-                type="text"
+              <textarea
                 value={char.appearance}
                 onChange={(e) => updateCharacter(idx, "appearance", e.target.value)}
                 placeholder={char.describing ? "Analyzing image..." : "Appearance (e.g., orange tabby cat wearing a tiny top hat)"}
-                className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-violet-400 focus:ring-1 focus:ring-violet-200"
+                rows={3}
+                className="w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-violet-400 focus:ring-1 focus:ring-violet-200 resize-y"
                 required
               />
               <input
