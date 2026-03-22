@@ -119,6 +119,23 @@ export async function exportStrip(
   panelBubbles?: Record<number, DialogueBubble[]>,
   format: "png" | "jpg" = "png"
 ): Promise<Blob> {
+  // Flatten nested bubble configs to match backend schema
+  const flatBubbles: Record<string, object[]> = {};
+  if (panelBubbles) {
+    for (const [pn, bubbles] of Object.entries(panelBubbles)) {
+      flatBubbles[pn] = bubbles.map((b) => ({
+        character: b.character,
+        text: b.text,
+        x: b.bubble.x,
+        y: b.bubble.y,
+        style: b.bubble.style,
+        color: b.bubble.color,
+        opacity: b.bubble.opacity,
+        show_character: b.bubble.showCharacter,
+      }));
+    }
+  }
+
   const res = await fetch(`${API_BASE}/api/strips/export`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -127,7 +144,7 @@ export async function exportStrip(
       panel_order: panelOrder,
       format,
       script,
-      panel_bubbles: panelBubbles || {},
+      panel_bubbles: flatBubbles,
     }),
   });
   if (!res.ok) throw new Error(await res.text());
