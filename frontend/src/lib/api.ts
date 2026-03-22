@@ -119,6 +119,8 @@ export async function exportStrip(
   panelOrder: number[],
   script: ComicScript,
   panelBubbles?: Record<number, DialogueBubble[]>,
+  title?: string,
+  author?: string,
   format: "png" | "jpg" = "png"
 ): Promise<Blob> {
   // Flatten nested bubble configs to match backend schema
@@ -148,6 +150,8 @@ export async function exportStrip(
       format,
       script,
       panel_bubbles: flatBubbles,
+      title: title || "",
+      author: author || "",
     }),
   });
   if (!res.ok) throw new Error(await res.text());

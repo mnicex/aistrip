@@ -91,6 +91,8 @@ class StripExportRequest(BaseModel):
         default_factory=dict,
         description="Optional per-panel bubble configs keyed by panel number",
     )
+    title: str = Field(default="", description="Strip title for export header")
+    author: str = Field(default="", description="Author name for export header")
 
 
 class IdeaRefineRequest(BaseModel):

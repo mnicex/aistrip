@@ -212,14 +212,12 @@ def assemble_strip(
     output_path: str | None = None,
     fmt: str = "png",
     panel_bubbles: dict[str, list[DialogueBubble]] | None = None,
+    title: str = "",
+    author: str = "",
 ) -> str:
-    """Combine panels into a horizontal strip image.
-
-    If panel_bubbles is provided, uses positioned/styled bubbles.
-    Otherwise falls back to default speech bubbles from the script.
-    """
+    """Combine panels into a horizontal strip image with optional title/author/watermark."""
     order = panel_order or sorted(panel_paths.keys())
-    panels: list[Image.Image] = []
+    rendered_panels: list[Image.Image] = []
 
     for pn in order:
         path = panel_paths.get(pn, "")
@@ -227,7 +225,7 @@ def assemble_strip(
             img = Image.new("RGB", PANEL_SIZE, (200, 200, 200))
             draw = ImageDraw.Draw(img)
             draw.text((300, 480), f"Panel {pn}\n(generation failed)", fill=(100, 100, 100))
-            panels.append(img)
+            rendered_panels.append(img)
             continue
 
         img = Image.open(path).resize(PANEL_SIZE)
@@ -241,25 +239,71 @@ def assemble_strip(
             if matching and matching[0].dialogue:
                 img = add_dialogue_to_panel(img, matching[0].dialogue)
 
-        panels.append(img)
+        rendered_panels.append(img)
 
-    # Assemble horizontally
-    total_w = len(panels) * PANEL_SIZE[0] + (len(panels) + 1) * STRIP_PADDING + (len(panels) - 1) * BORDER_WIDTH
-    total_h = PANEL_SIZE[1] + 2 * STRIP_PADDING
+    # Calculate dimensions
+    n = len(rendered_panels)
+    panels_w = n * PANEL_SIZE[0] + (n + 1) * STRIP_PADDING + (n - 1) * BORDER_WIDTH
+
+    # Header height (title + author)
+    header_h = 0
+    title_font = _get_font(48, bold=True)
+    author_font = _get_font(28)
+    watermark_font = _get_font(18)
+
+    has_header = bool(title.strip() or author.strip())
+    if has_header:
+        header_h = 30  # top padding
+        if title.strip():
+            header_h += 56
+        if author.strip():
+            header_h += 34
+        header_h += 10  # bottom spacing
+
+    watermark_h = 36  # space for watermark at bottom
+
+    total_w = panels_w
+    total_h = header_h + PANEL_SIZE[1] + 2 * STRIP_PADDING + watermark_h
 
     strip = Image.new("RGB", (total_w, total_h), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(strip)
 
+    # Draw header
+    y_cursor = 0
+    if has_header:
+        y_cursor = 30
+        if title.strip():
+            bbox = draw.textbbox((0, 0), title.strip(), font=title_font)
+            tw = bbox[2] - bbox[0]
+            tx = (total_w - tw) // 2
+            draw.text((tx, y_cursor), title.strip(), fill=(30, 30, 30), font=title_font)
+            y_cursor += 56
+        if author.strip():
+            bbox = draw.textbbox((0, 0), author.strip(), font=author_font)
+            aw = bbox[2] - bbox[0]
+            ax = (total_w - aw) // 2
+            draw.text((ax, y_cursor), author.strip(), fill=(120, 120, 120), font=author_font)
+
+    # Draw panels
+    panel_y = header_h + STRIP_PADDING
     x = STRIP_PADDING
-    for img in panels:
+    for img in rendered_panels:
         draw.rectangle(
-            (x - BORDER_WIDTH, STRIP_PADDING - BORDER_WIDTH,
-             x + PANEL_SIZE[0] + BORDER_WIDTH, STRIP_PADDING + PANEL_SIZE[1] + BORDER_WIDTH),
+            (x - BORDER_WIDTH, panel_y - BORDER_WIDTH,
+             x + PANEL_SIZE[0] + BORDER_WIDTH, panel_y + PANEL_SIZE[1] + BORDER_WIDTH),
             outline=BORDER_COLOR,
             width=BORDER_WIDTH,
         )
-        strip.paste(img, (x, STRIP_PADDING))
+        strip.paste(img, (x, panel_y))
         x += PANEL_SIZE[0] + STRIP_PADDING + BORDER_WIDTH
+
+    # Draw watermark
+    wm_text = "AIStrip by mnice"
+    bbox = draw.textbbox((0, 0), wm_text, font=watermark_font)
+    wm_w = bbox[2] - bbox[0]
+    wm_x = total_w - wm_w - STRIP_PADDING
+    wm_y = total_h - 28
+    draw.text((wm_x, wm_y), wm_text, fill=(180, 180, 180), font=watermark_font)
 
     if output_path is None:
         output_path = "strip_output." + fmt

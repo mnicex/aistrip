@@ -566,6 +566,8 @@ export default function StripEditor({
   const [regeneratingPanel, setRegeneratingPanel] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
   const [editorError, setEditorError] = useState<string | null>(null);
+  const [title, setTitle] = useState(script.title);
+  const [author, setAuthor] = useState("");
 
   const characterNames = characters.map((c) => c.name);
 
@@ -619,7 +621,7 @@ export default function StripEditor({
     setEditorError(null);
     try {
       const panelOrder = panels.map((p) => p.panelNumber);
-      const blob = await exportStrip(stripId, panelOrder, currentScript(), bubbleMap());
+      const blob = await exportStrip(stripId, panelOrder, currentScript(), bubbleMap(), title, author);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -653,9 +655,20 @@ export default function StripEditor({
 
   return (
     <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-stone-900">{script.title}</h2>
-        <p className="text-sm text-stone-500">
+      <div className="text-center space-y-2">
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Strip title..."
+          className="text-2xl font-bold text-stone-900 text-center bg-transparent border-b-2 border-transparent hover:border-stone-300 focus:border-violet-500 focus:outline-none w-full max-w-lg mx-auto block transition"
+        />
+        <input
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          placeholder="Author name (optional)"
+          className="text-sm text-stone-500 text-center bg-transparent border-b border-transparent hover:border-stone-200 focus:border-violet-400 focus:outline-none w-full max-w-sm mx-auto block transition"
+        />
+        <p className="text-xs text-stone-400">
           Drag bubbles to position · Click to edit style & text · Regenerate panels
         </p>
       </div>
