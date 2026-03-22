@@ -492,6 +492,7 @@ export default function StripEditor({
   );
   const [regeneratingPanel, setRegeneratingPanel] = useState<number | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [editorError, setEditorError] = useState<string | null>(null);
 
   const characterNames = characters.map((c) => c.name);
 
@@ -503,6 +504,7 @@ export default function StripEditor({
 
   const handleRegenerate = async (panelNumber: number) => {
     setRegeneratingPanel(panelNumber);
+    setEditorError(null);
     try {
       await regeneratePanel(stripId, panelNumber, script, characters);
       setPanels((prev) =>
@@ -512,8 +514,8 @@ export default function StripEditor({
             : p
         )
       );
-    } catch (err) {
-      console.error("Regen failed:", err);
+    } catch (err: any) {
+      setEditorError(err.message || `Panel ${panelNumber} regeneration failed.`);
     } finally {
       setRegeneratingPanel(null);
     }
@@ -541,6 +543,7 @@ export default function StripEditor({
 
   const handleExport = async () => {
     setExporting(true);
+    setEditorError(null);
     try {
       const panelOrder = panels.map((p) => p.panelNumber);
       const blob = await exportStrip(stripId, panelOrder, currentScript(), bubbleMap());
@@ -550,8 +553,8 @@ export default function StripEditor({
       a.download = `${stripId}_strip.png`;
       a.click();
       URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Export failed:", err);
+    } catch (err: any) {
+      setEditorError(err.message || "Export failed — please try again.");
     } finally {
       setExporting(false);
     }
@@ -597,6 +600,15 @@ export default function StripEditor({
             />
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-center gap-3">
+        {editorError && (
+          <div className="w-full max-w-2xl rounded-md bg-rose-50 border border-rose-200 px-4 py-2 text-sm text-rose-700 flex items-center justify-between mb-3">
+            <span>{editorError}</span>
+            <button onClick={() => setEditorError(null)} className="ml-2 text-rose-400 hover:text-rose-600">✕</button>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-center gap-3">

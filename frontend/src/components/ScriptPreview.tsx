@@ -33,6 +33,7 @@ function EditablePanel({
   const [dialogue, setDialogue] = useState<DialogueLine[]>(panel.dialogue);
   const [aiInstruction, setAiInstruction] = useState("");
   const [rewriting, setRewriting] = useState(false);
+  const [rewriteError, setRewriteError] = useState<string | null>(null);
 
   const save = () => {
     onUpdate({
@@ -55,6 +56,7 @@ function EditablePanel({
   const handleAiRewrite = async () => {
     if (!aiInstruction.trim()) return;
     setRewriting(true);
+    setRewriteError(null);
     try {
       const result = await rewritePanel(panel, aiInstruction, artStyle, idea);
       const p = result.panel;
@@ -63,8 +65,8 @@ function EditablePanel({
       setDialogue(p.dialogue);
       onUpdate(p);
       setAiInstruction("");
-    } catch (err) {
-      console.error("Rewrite failed:", err);
+    } catch (err: any) {
+      setRewriteError(err.message || "AI rewrite failed — please try again.");
     } finally {
       setRewriting(false);
     }
@@ -212,6 +214,12 @@ function EditablePanel({
             {rewriting ? "..." : "Rewrite"}
           </button>
         </div>
+        {rewriteError && (
+          <div className="rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700 flex items-center justify-between">
+            <span>{rewriteError}</span>
+            <button onClick={() => setRewriteError(null)} className="ml-2 text-rose-400 hover:text-rose-600">✕</button>
+          </div>
+        )}
       </div>
     </div>
   );

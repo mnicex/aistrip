@@ -23,6 +23,7 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
   ]);
   const [suggesting, setSuggesting] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const projectInputRef = useRef<HTMLInputElement | null>(null);
@@ -54,11 +55,12 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
   const handleSuggestCharacters = async () => {
     if (!idea.trim()) return;
     setSuggesting(true);
+    setAiError(null);
     try {
       const result = await suggestCharacters(idea);
       setCharacters(result.characters.map((c) => ({ ...c })));
-    } catch (err) {
-      console.error("Failed to suggest characters:", err);
+    } catch (err: any) {
+      setAiError(err.message || "Failed to suggest characters — please try again.");
     } finally {
       setSuggesting(false);
     }
@@ -109,8 +111,9 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
           };
           return next;
         });
-      } catch (err) {
-        console.error("Failed to describe character:", err);
+      } catch (err: any) {
+        const msg = err.message || "Failed to describe character from image.";
+        setAiError(msg);
         setCharacters((prev) => {
           const next = [...prev];
           next[idx] = { ...next[idx], describing: false };
@@ -149,6 +152,14 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
 
       {/* Load project button */}
       <div className="mb-4 flex justify-end">
+
+        {/* AI error banner */}
+        {aiError && (
+          <div className="flex-1 mr-3 rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700 flex items-center justify-between">
+            <span>{aiError}</span>
+            <button onClick={() => setAiError(null)} className="ml-2 text-rose-400 hover:text-rose-600">✕</button>
+          </div>
+        )}
         <input
           ref={projectInputRef}
           type="file"

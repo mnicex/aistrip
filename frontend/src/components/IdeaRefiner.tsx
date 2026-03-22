@@ -15,10 +15,12 @@ export default function IdeaRefiner({ currentIdea, onAccept }: Props) {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [feedback, setFeedback] = useState("");
   const [history, setHistory] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const handleRefine = async (feedbackText = "") => {
     if (!currentIdea.trim() && !refined) return;
     setLoading(true);
+    setError(null);
     try {
       const result = await refineIdea(
         currentIdea,
@@ -29,8 +31,8 @@ export default function IdeaRefiner({ currentIdea, onAccept }: Props) {
       setSuggestions(result.suggestions);
       setHistory((prev) => [...prev, result.refined_idea]);
       setFeedback("");
-    } catch (err) {
-      console.error("Refine failed:", err);
+    } catch (err: any) {
+      setError(err.message || "AI refinement failed — please try again.");
     } finally {
       setLoading(false);
     }
@@ -67,6 +69,12 @@ export default function IdeaRefiner({ currentIdea, onAccept }: Props) {
 
       {loading && !refined && (
         <p className="text-sm text-stone-500 animate-pulse">✨ Thinking...</p>
+      )}
+
+      {error && (
+        <div className="rounded-md bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700">
+          {error}
+        </div>
       )}
 
       {refined && (
