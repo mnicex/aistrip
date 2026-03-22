@@ -55,7 +55,7 @@ export default function IdeaForm({ onSubmit, onLoadProject, loading }: Props) {
     if (!idea.trim()) return;
     setSuggesting(true);
     try {
-      const result = await suggestCharacters(idea, numPanels <= 3 ? 2 : 3);
+      const result = await suggestCharacters(idea);
       setCharacters(result.characters.map((c) => ({ ...c })));
     } catch (err) {
       console.error("Failed to suggest characters:", err);

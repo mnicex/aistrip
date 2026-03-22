@@ -42,7 +42,9 @@ async def suggest_characters(
                 "role": "user",
                 "content": (
                     f"Comic idea: {idea}\n\n"
-                    f"Suggest {num_characters} characters for this strip. "
+                    f"Suggest the right number of characters for this strip (at least {num_characters}, "
+                    "but add more if the idea clearly involves them). "
+                    "Include every character mentioned or implied in the idea. "
                     "Make them visually distinct and fun."
                 ),
             },
