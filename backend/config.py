@@ -3,11 +3,16 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    # Azure OpenAI — authenticated via DefaultAzureCredential (no API key needed)
+    # Azure OpenAI
     azure_openai_endpoint: str = ""
     azure_openai_chat_deployment: str = "gpt-5.4"
     azure_openai_dalle_deployment: str = "gpt-image-1.5"
     azure_openai_api_version: str = "2024-10-21"
+
+    # Service Principal auth (preferred — no az login needed)
+    azure_tenant_id: str = ""
+    azure_client_id: str = ""
+    azure_client_secret: str = ""
 
     output_dir: str = "output"
     max_panels: int = 5

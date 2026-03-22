@@ -1,23 +1,32 @@
-"""Shared Azure OpenAI client using DefaultAzureCredential (no API keys)."""
+"""Shared Azure OpenAI client — Service Principal or fallback to az login."""
 
 from __future__ import annotations
 
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.identity import ClientSecretCredential, DefaultAzureCredential, get_bearer_token_provider
 from openai import AsyncAzureOpenAI
 
 from config import Settings
 
-# Cognitive Services scope for Azure OpenAI token auth
 _TOKEN_SCOPE = "https://cognitiveservices.azure.com/.default"
 
 
 def get_azure_openai_client(settings: Settings) -> AsyncAzureOpenAI:
     """Create an AsyncAzureOpenAI client authenticated via Entra ID.
 
-    Locally this uses your `az login` session.
-    In production it uses managed identity automatically.
+    Preferred: set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET
+    for reliable Service Principal auth (no az login needed).
+
+    Fallback: DefaultAzureCredential (az login, managed identity, etc.)
     """
-    credential = DefaultAzureCredential()
+    if settings.azure_tenant_id and settings.azure_client_id and settings.azure_client_secret:
+        credential = ClientSecretCredential(
+            tenant_id=settings.azure_tenant_id,
+            client_id=settings.azure_client_id,
+            client_secret=settings.azure_client_secret,
+        )
+    else:
+        credential = DefaultAzureCredential()
+
     token_provider = get_bearer_token_provider(credential, _TOKEN_SCOPE)
 
     return AsyncAzureOpenAI(
