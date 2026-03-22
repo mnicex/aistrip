@@ -233,11 +233,20 @@ export default function StripEditor({ stripId, script, characters, panelPaths, i
     );
   };
 
+  // Build a script copy with the latest edited dialogue
+  const currentScript = (): ComicScript => ({
+    ...script,
+    panels: script.panels.map((p) => {
+      const edited = panels.find((ep) => ep.panelNumber === p.panel_number);
+      return edited ? { ...p, dialogue: edited.dialogue } : p;
+    }),
+  });
+
   const handleExport = async () => {
     setExporting(true);
     try {
       const panelOrder = panels.map((p) => p.panelNumber);
-      const blob = await exportStrip(stripId, panelOrder, script);
+      const blob = await exportStrip(stripId, panelOrder, currentScript());
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -256,7 +265,7 @@ export default function StripEditor({ stripId, script, characters, panelPaths, i
       version: 1,
       idea,
       characters,
-      script,
+      script: currentScript(),
       panel_order: panels.map((p) => p.panelNumber),
     };
     const blob = new Blob([JSON.stringify(project, null, 2)], { type: "application/json" });
