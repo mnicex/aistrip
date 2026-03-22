@@ -152,6 +152,7 @@ export default function IdeaRefiner({ currentIdea, onAccept }: Props) {
                 setHistory([]);
                 setFeedback("");
                 setError(null);
+                setOpen(false);
               }}
               className="rounded border border-stone-300 px-4 py-1.5 text-sm text-stone-500 hover:text-stone-700 hover:border-stone-400 transition"
             >
