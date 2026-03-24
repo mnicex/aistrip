@@ -42,7 +42,18 @@ async def generate_panel_image(
     """Generate a single panel image. Returns the local file path."""
     client = get_azure_openai_client(settings)
 
-    prompt = custom_prompt or _build_panel_prompt(panel, script, characters)
+    if custom_prompt:
+        # Wrap user's custom prompt with art style + character context for consistency
+        char_fragment = build_all_characters_fragment(characters)
+        prompt = (
+            f"Art style: {script.art_style}\n\n"
+            f"{char_fragment}\n\n"
+            f"Scene (panel {panel.panel_number}): {custom_prompt}\n\n"
+            "IMPORTANT: Do NOT include any text, speech bubbles, captions, or words "
+            "in the image. Only draw the visual scene. Text will be added later."
+        )
+    else:
+        prompt = _build_panel_prompt(panel, script, characters)
 
     response = await client.images.generate(
         model=settings.azure_openai_dalle_deployment,
