@@ -17,7 +17,7 @@ STRIP_PADDING = 20
 BUBBLE_PADDING = 16
 BUBBLE_RADIUS = 20
 FONT_SIZE = 28
-BUBBLE_MAX_WIDTH = 320
+BUBBLE_MAX_WIDTH = 460  # ~45% of 1024px panel, matching frontend preview proportions
 BACKGROUND_COLOR = (255, 255, 255)
 BORDER_COLOR = (30, 30, 30)
 TEXT_COLOR = (20, 20, 20)
@@ -182,10 +182,14 @@ def add_styled_bubbles_to_panel(
 
     for b in bubbles:
         # Convert percentage position to pixels
-        px = int(b.x / 100 * img.width)
-        py = int(b.y / 100 * img.height)
-        px = max(BUBBLE_PADDING, min(px, img.width - BUBBLE_PADDING * 2))
-        py = max(BUBBLE_PADDING, min(py, img.height - BUBBLE_PADDING * 2))
+        # x,y represent the top-left corner of the bubble (matching CSS positioning)
+        # Add padding offset to get the text origin inside the bubble
+        bx = int(b.x / 100 * img.width)
+        by = int(b.y / 100 * img.height)
+        bx = max(BUBBLE_PADDING, min(bx, img.width - BUBBLE_PADDING * 2))
+        by = max(BUBBLE_PADDING, min(by, img.height - BUBBLE_PADDING * 2))
+        px = bx + BUBBLE_PADDING
+        py = by + BUBBLE_PADDING
 
         label = f"{b.character}: {b.text}" if b.show_character else b.text
         use_font = bold_font if b.style == "shout" else font
